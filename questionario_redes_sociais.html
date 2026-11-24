@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f5f5">
+  <title>Questionário | Redes Sociais</title>
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --surface: #fff;
+      --text: #111;
+      --muted: #777;
+      --border: #e5e5e5;
+      --success: #eaf5ed;
+      --success-text: #216b37;
+      --error: #fbecec;
+      --error-text: #a12b2b;
+    }
+    * { box-sizing: border-box; }
+    html {
+      min-height: 100%;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    body {
+      margin: 0;
+      min-height: 100svh;
+      padding: max(22px, env(safe-area-inset-top)) 14px max(22px, env(safe-area-inset-bottom));
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      overflow-x: hidden;
+    }
+    .container {
+      width: 100%;
+      max-width: 480px;
+      margin: auto 0;
+    }
+    header { margin-bottom: 22px; }
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 6vw, 46px);
+      letter-spacing: -2px;
+      line-height: 1.05;
+    }
+    .subtitle {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .quiz-card {
+      width: 100%;
+      min-width: 0;
+      padding: clamp(18px, 5vw, 24px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+      box-shadow: 0 12px 40px rgba(0,0,0,.04);
+    }
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+    }
+    .progress-track {
+      height: 5px;
+      overflow: hidden;
+      margin-bottom: 30px;
+      border-radius: 20px;
+      background: #eee;
+    }
+    .progress-bar {
+      width: 10%;
+      height: 100%;
+      border-radius: inherit;
+      background: #111;
+      transition: width .25s ease;
+    }
+    h2 {
+      margin: 0 0 22px;
+      font-size: clamp(20px, 4vw, 25px);
+      line-height: 1.35;
+      letter-spacing: -.5px;
+    }
+    .answers { display: grid; gap: 11px; }
+    .answer {
+      width: 100%;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 12px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: #fff;
+      color: var(--text);
+      text-align: left;
+      font-size: 14px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      transition: border-color .18s, background .18s, transform .18s;
+    }
+    .answer:hover:not(:disabled) {
+      border-color: #111;
+      transform: translateY(-1px);
+    }
+    .letter {
+      width: 30px;
+      height: 30px;
+      flex: 0 0 30px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .answer.correct {
+      border-color: #a7d4b1;
+      background: var(--success);
+      color: var(--success-text);
+    }
+    .answer.wrong {
+      border-color: #e7b2b2;
+      background: var(--error);
+      color: var(--error-text);
+    }
+    .answer:disabled { cursor: default; }
+    button:focus-visible {
+      outline: 3px solid #777;
+      outline-offset: 3px;
+    }
+    .feedback {
+      display: none;
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .feedback.show { display: block; }
+    .feedback.good { background: var(--success); color: var(--success-text); }
+    .feedback.bad { background: var(--error); color: var(--error-text); }
+    .footer {
+      display: flex;
+      align-items: stretch;
+      flex-direction: column;
+      gap: 13px;
+      margin-top: 22px;
+    }
+    .hint { color: var(--muted); font-size: 12px; }
+    .next-btn, .restart-btn {
+      width: 100%;
+      min-height: 48px;
+      border: 0;
+      border-radius: 9px;
+      padding: 13px 20px;
+      background: #111;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s, transform .2s;
+    }
+    .next-btn:hover:not(:disabled), .restart-btn:hover {
+      opacity: .82;
+      transform: translateY(-1px);
+    }
+    .next-btn:disabled { opacity: .3; cursor: not-allowed; }
+    .result { display: none; padding: 18px 0 4px; text-align: center; }
+    .result.show { display: block; }
+    .result-mark {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      background: #111;
+      color: #fff;
+      font-size: 24px;
+    }
+    .result h2 { margin-bottom: 10px; }
+    .score {
+      margin: 18px 0 24px;
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -2px;
+    }
+    .result p {
+      max-width: 390px;
+      margin: 0 auto 22px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    @media (max-width: 360px) {
+      body { padding-left: 10px; padding-right: 10px; }
+      header { margin-bottom: 18px; }
+      .eyebrow { font-size: 10px; letter-spacing: 1.5px; }
+      h1 { font-size: 32px; }
+      .subtitle { font-size: 13px; }
+      .quiz-card { padding: 16px 13px; border-radius: 13px; }
+      .topline { font-size: 10px; gap: 8px; }
+      h2 { font-size: 19px; }
+      .answer { gap: 9px; padding: 12px 9px; font-size: 13px; }
+      .letter { width: 27px; height: 27px; flex-basis: 27px; }
+    }
+    @media (min-width: 600px) {
+      body { padding-left: 18px; padding-right: 18px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <p class="eyebrow">Questionário • Educação digital</p>
+      <h1>Redes sociais</h1>
+      <p class="subtitle">Teste seus conhecimentos sobre a influência das redes sociais na sociedade.</p>
+    </header>
+
+    <section class="quiz-card" aria-live="polite">
+      <div id="quiz">
+        <div class="topline">
+          <span id="question-count">Questão 1 de 10</span>
+          <span id="progress-label">10% concluído</span>
+        </div>
+        <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
+        <h2 id="question-text"></h2>
+        <div class="answers" id="answers"></div>
+        <div class="feedback" id="feedback" role="status"></div>
+        <div class="footer">
+          <span class="hint" id="hint">Selecione uma alternativa para continuar.</span>
+          <button class="next-btn" id="next-btn" disabled>Próxima questão</button>
+        </div>
+      </div>
+
+      <div class="result" id="result">
+        <div class="result-mark">✓</div>
+        <p class="eyebrow">Questionário concluído</p>
+        <h2>Você terminou!</h2>
+        <div class="score" id="score">0/10</div>
+        <p id="result-message"></p>
+        <button class="restart-btn" id="restart-btn">Refazer questionário</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const questions = [
+  {
+    "question": "Qual é a principal influência das redes sociais na sociedade?",
+    "options": [
+      "Apenas prejudicar a comunicação.",
+      "Facilitar a comunicação e o acesso à informação.",
+      "Impedir o contato entre pessoas.",
+      "Diminuir o uso da tecnologia."
+    ],
+    "correct": 1,
+    "explanation": "As redes sociais facilitam a comunicação e ampliam o acesso à informação."
+  },
+  {
+    "question": "Qual é um dos benefícios das redes sociais?",
+    "options": [
+      "Aproximar pessoas de diferentes lugares.",
+      "Aumentar o isolamento social.",
+      "Espalhar apenas notícias falsas.",
+      "Diminuir o conhecimento."
+    ],
+    "correct": 0,
+    "explanation": "As redes sociais permitem conectar pessoas que estão em diferentes lugares."
+  },
+  {
+    "question": "Qual é um dos principais riscos das redes sociais?",
+    "options": [
+      "Melhorar a comunicação.",
+      "Facilitar os estudos.",
+      "Disseminar notícias falsas.",
+      "Compartilhar conhecimentos."
+    ],
+    "correct": 2,
+    "explanation": "A disseminação de notícias falsas é um dos riscos do uso das redes sociais."
+  },
+  {
+    "question": "Como as redes sociais podem influenciar os jovens?",
+    "options": [
+      "Não causam nenhuma influência.",
+      "Influenciam opiniões, comportamentos e hábitos.",
+      "Impedem novas amizades.",
+      "Eliminam a comunicação."
+    ],
+    "correct": 1,
+    "explanation": "O conteúdo visto nas redes pode influenciar opiniões, comportamentos e hábitos."
+  },
+  {
+    "question": "O que é cyberbullying?",
+    "options": [
+      "Uma forma de estudar pela internet.",
+      "Uma rede social educativa.",
+      "Uma forma de entretenimento.",
+      "A prática de bullying por meios digitais."
+    ],
+    "correct": 3,
+    "explanation": "Cyberbullying é a prática de bullying usando meios digitais, como redes sociais e aplicativos."
+  },
+  {
+    "question": "Como evitar a divulgação de notícias falsas?",
+    "options": [
+      "Compartilhar tudo rapidamente.",
+      "Acreditar em qualquer publicação.",
+      "Verificar as informações antes de compartilhar.",
+      "Ignorar todas as notícias."
+    ],
+    "correct": 2,
+    "explanation": "Verificar a fonte e confirmar as informações antes de compartilhar ajuda a evitar a desinformação."
+  },
+  {
+    "question": "Qual é a importância das redes sociais para os estudos?",
+    "options": [
+      "Permitir acesso a conteúdos educativos.",
+      "Substituir completamente os professores.",
+      "Impedir a aprendizagem.",
+      "Diminuir o acesso à informação."
+    ],
+    "correct": 0,
+    "explanation": "As redes sociais podem facilitar o acesso a materiais, conteúdos e comunidades educativas."
+  },
+  {
+    "question": "O uso excessivo das redes sociais pode causar:",
+    "options": [
+      "Mais tempo livre sempre.",
+      "Dificuldade de concentração e prejuízos à rotina.",
+      "Melhor organização em todos os casos.",
+      "Aumento obrigatório das notas escolares."
+    ],
+    "correct": 1,
+    "explanation": "O uso excessivo pode atrapalhar a concentração, o sono e outras atividades da rotina."
+  },
+  {
+    "question": "O que devemos fazer para usar as redes sociais de forma consciente?",
+    "options": [
+      "Passar o dia inteiro conectado.",
+      "Compartilhar informações pessoais com todos.",
+      "Acreditar em tudo que vemos.",
+      "Ter equilíbrio e responsabilidade no uso."
+    ],
+    "correct": 3,
+    "explanation": "O uso consciente exige equilíbrio, cuidado e responsabilidade."
+  },
+  {
+    "question": "Qual é o papel das redes sociais na sociedade atual?",
+    "options": [
+      "Servir somente para diversão.",
+      "Substituir todas as formas de comunicação.",
+      "Informar, comunicar, entreter e conectar pessoas.",
+      "Impedir o desenvolvimento da sociedade."
+    ],
+    "correct": 2,
+    "explanation": "As redes sociais ajudam a informar, comunicar, entreter e conectar pessoas."
+  }
+];
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+
+    const questionCount = document.getElementById("question-count");
+    const progressLabel = document.getElementById("progress-label");
+    const progressBar = document.getElementById("progress-bar");
+    const questionText = document.getElementById("question-text");
+    const answersContainer = document.getElementById("answers");
+    const feedback = document.getElementById("feedback");
+    const nextButton = document.getElementById("next-btn");
+    const hint = document.getElementById("hint");
+    const quiz = document.getElementById("quiz");
+    const result = document.getElementById("result");
+
+    function renderQuestion() {
+      const item = questions[currentQuestion];
+      const progress = ((currentQuestion + 1) / questions.length) * 100;
+
+      questionCount.textContent = `Questão ${currentQuestion + 1} de ${questions.length}`;
+      progressLabel.textContent = `${Math.round(progress)}% concluído`;
+      progressBar.style.width = `${progress}%`;
+      questionText.textContent = item.question;
+      answersContainer.innerHTML = "";
+      feedback.className = "feedback";
+      feedback.textContent = "";
+      nextButton.disabled = true;
+      nextButton.textContent = currentQuestion === questions.length - 1
+        ? "Ver resultado"
+        : "Próxima questão";
+      hint.textContent = "Selecione uma alternativa para continuar.";
+      answered = false;
+
+      item.options.forEach((option, index) => {
+        const button = document.createElement("button");
+        button.className = "answer";
+        button.type = "button";
+
+        const letter = document.createElement("span");
+        letter.className = "letter";
+        letter.textContent = String.fromCharCode(65 + index);
+
+        const text = document.createElement("span");
+        text.textContent = option;
+
+        button.append(letter, text);
+        button.addEventListener("click", () => selectAnswer(index));
+        answersContainer.appendChild(button);
+      });
+    }
+
+    function selectAnswer(selectedIndex) {
+      if (answered) return;
+      answered = true;
+
+      const item = questions[currentQuestion];
+      const buttons = [...answersContainer.querySelectorAll(".answer")];
+      const isCorrect = selectedIndex === item.correct;
+
+      buttons.forEach((button, index) => {
+        button.disabled = true;
+        if (index === item.correct) button.classList.add("correct");
+        if (index === selectedIndex && !isCorrect) button.classList.add("wrong");
+      });
+
+      if (isCorrect) {
+        score++;
+        feedback.textContent = `Resposta correta! ${item.explanation}`;
+        feedback.className = "feedback show good";
+      } else {
+        feedback.textContent =
+          `Resposta incorreta. A alternativa correta é ${String.fromCharCode(65 + item.correct)}. ${item.explanation}`;
+        feedback.className = "feedback show bad";
+      }
+
+      hint.textContent = "Resposta registrada.";
+      nextButton.disabled = false;
+    }
+
+    function showResult() {
+      quiz.style.display = "none";
+      result.classList.add("show");
+      document.getElementById("score").textContent = `${score}/${questions.length}`;
+
+      const message = score === questions.length
+        ? "Excelente! Você acertou todas as questões."
+        : score >= 7
+          ? "Muito bem! Você teve um ótimo resultado."
+          : score >= 5
+            ? "Bom trabalho! Revise as questões que errou para aprender ainda mais."
+            : "Revise o conteúdo e tente novamente para melhorar sua pontuação.";
+
+      document.getElementById("result-message").textContent = message;
+    }
+
+    nextButton.addEventListener("click", () => {
+      if (!answered) return;
+      if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        renderQuestion();
+      } else {
+        showResult();
+      }
+    });
+
+    document.getElementById("restart-btn").addEventListener("click", () => {
+      currentQuestion = 0;
+      score = 0;
+      answered = false;
+      result.classList.remove("show");
+      quiz.style.display = "block";
+      renderQuestion();
+    });
+
+    renderQuestion();
+  </script>
+</body>
+</html>
